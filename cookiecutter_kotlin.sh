@@ -133,23 +133,23 @@ EOL
 
 # # Initialize Git repository and make initial commit
 cd "$PROJECT_NAME" || exit
-# git init
-# git add .
-# git commit -m "Initial commit"
+git init
+git add .
+git commit -m "Initial commit"
 
-# # Check if gh CLI is authenticated. If not, login to GitHub CLI so that we can push the repository
-# if ! gh auth status &> /dev/null
-# then
-#     echo "You are not logged in to GitHub CLI. Initiating login..."
-#     gh auth login
-# fi
+# Check if gh CLI is authenticated. If not, login to GitHub CLI so that we can push the repository
+if ! gh auth status &> /dev/null
+then
+    echo "You are not logged in to GitHub CLI. Initiating login..."
+    gh auth login
+fi
 
-# # Push the repository to GitHub
-# gh repo create $PROJECT_NAME --private --source=. --push
+# Push the repository to GitHub
+gh repo create $PROJECT_NAME --private --source=. --push
 
 # # Set up Gradle Wrapper with the specified version
 gradle wrapper --gradle-version "$GRADLE_VERSION"
 
-# echo "Project $PROJECT_NAME has been set up successfully with Kotlin $KOTLIN_VERSION, Gradle $GRADLE_VERSION, JDK $JDK_VERSION and a Git repo."
+echo "Project $PROJECT_NAME has been set up successfully with Kotlin $KOTLIN_VERSION, Gradle $GRADLE_VERSION, JDK $JDK_VERSION and a Git repo."
 
 idea .
