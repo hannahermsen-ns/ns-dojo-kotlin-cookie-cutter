@@ -29,9 +29,17 @@ then
     brew install gh
 fi
 
+# Check if ktlint (a linter for Kotlin) is installed, if not install it
+if ! command -v ktlint &> /dev/null
+then
+    echo "ktlint could not be found, installing via Homebrew."
+    brew install ktlint
+fi
+
 # Create the directory structure
 mkdir -p "$PROJECT_NAME/src/main/kotlin"
 mkdir -p "$PROJECT_NAME/src/test/kotlin"
+mkdir -p "$PROJECT_NAME/.githooks"
 
 # Create build.gradle.kts
 cat > "$PROJECT_NAME/build.gradle.kts" <<EOL
@@ -67,7 +75,7 @@ EOL
 # Create Main.kt
 cat > "$PROJECT_NAME/src/main/kotlin/Main.kt" <<EOL
 fun main() {
-    println("Hello, Kotlin!")
+    println("Hello,              Kotlin!")
 }
 EOL
 
@@ -130,10 +138,26 @@ out/
 *.ear
 EOL
 
+# Create precommit file
+cat > "$PROJECT_NAME/.githooks/pre-commit" <<EOL
+#!/bin/sh
+
+# Run ktlint with error handling
+if ! ktlint --format; then
+  echo "Ktlint formatting failed"
+  exit 1
+fi
+EOL
+# Give execution rights to the precommit file
+chmod +x $PROJECT_NAME/.githooks/pre-commit
 
 # # Initialize Git repository and make initial commit
 cd "$PROJECT_NAME" || exit
 git init
+
+# Configure git hooks path
+git config core.hooksPath .githooks
+
 git add .
 git commit -m "Initial commit"
 
