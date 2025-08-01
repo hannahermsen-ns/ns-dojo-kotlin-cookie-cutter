@@ -2,7 +2,7 @@
 
 # Default values
 DEFAULT_PROJECT_NAME="dojo_exercise"
-DEFAULT_KOTLIN_VERSION="2.1.0"
+DEFAULT_KOTLIN_VERSION="2.2.0"
 DEFAULT_GRADLE_VERSION="8.12"
 DEFAULT_JDK_VERSION=17
 
@@ -75,7 +75,7 @@ EOL
 # Create Main.kt
 cat > "$PROJECT_NAME/src/main/kotlin/Main.kt" <<EOL
 fun main() {
-    println("Hello,              Kotlin!")
+    println("Hello, Kotlin!")
 }
 EOL
 
@@ -133,10 +133,10 @@ out/
 .idea/
 *.iml
 *.class
-*.jar
 *.war
 *.ear
 EOL
+
 
 # Create precommit file
 cat > "$PROJECT_NAME/.githooks/pre-commit" <<EOL
@@ -175,5 +175,53 @@ gh repo create $PROJECT_NAME --private --source=. --push
 gradle wrapper --gradle-version "$GRADLE_VERSION"
 
 echo "Project $PROJECT_NAME has been set up successfully with Kotlin $KOTLIN_VERSION, Gradle $GRADLE_VERSION, JDK $JDK_VERSION and a Git repo."
+
+# Create GitHub Actions workflow directory
+mkdir -p ".github/workflows"
+
+# Create GitHub Actions CI workflow
+cat > ".github/workflows/ci.yml" <<EOL
+name: Kotlin CI
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    - name: Set up JDK $JDK_VERSION
+      uses: actions/setup-java@v3
+      with:
+        distribution: 'temurin'
+        java-version: $JDK_VERSION
+
+    - name: Cache Gradle packages
+      uses: actions/cache@v3
+      with:
+        path: ~/.gradle/caches
+        key: gradle-\${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+        restore-keys: gradle-
+
+    - name: Grant execute permission for gradlew
+      run: chmod +x ./gradlew
+
+    - name: Build and test with Gradle
+      run: ./gradlew clean build
+EOL
+
+git add .
+git commit -m "Add pipeline"
+git push
 
 idea .
